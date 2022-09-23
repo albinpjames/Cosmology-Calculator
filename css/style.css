@@ -3,6 +3,18 @@
 	height: 100vh;
 }
 
+.section .head {
+	display: block;
+	margin-left: -5px;
+	margin-bottom: 35px;
+	font-weight: 400;
+	text-transform: uppercase;
+	line-height: 24px;
+	height: 24px;
+	font-size: 50px;
+	color: #fff;
+}
+
 .section .section-center {
 	position: absolute;
 	top: 50%;
@@ -12,9 +24,9 @@
 	transform: translateY(-50%);
 }
 
-#booking {
+#Cosmology_Calculator {
 	font-family: 'PT Sans', sans-serif;
-	background-image: url('../img/background.jpg');
+	background-image: url('../img/bgcosmo.jpg');
 	background-size: cover;
 	background-position: center;
 }
@@ -94,6 +106,18 @@
 	line-height: 24px;
 	height: 24px;
 	font-size: 12px;
+	color: #fff;
+}
+
+.booking-form .form-head {
+	display: block;
+	margin-left: -15px;
+	margin-bottom: 15px;
+	font-weight: 400;
+	text-transform: uppercase;
+	line-height: 24px;
+	height: 24px;
+	font-size: 20px;
 	color: #fff;
 }
 

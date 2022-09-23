@@ -5,9 +5,9 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-	<title>Booking Form HTML Template</title>
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<title>Cosmology Calculator</title>
 
 	<!-- Google font -->
 	<link href="https://fonts.googleapis.com/css?family=PT+Sans:400" rel="stylesheet">
@@ -19,23 +19,26 @@
 	<!-- Custom stlylesheet -->
 	<link type="text/css" rel="stylesheet" href="css/style.css" />
 
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-	<!--[if lt IE 9]>
-		  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-		<![endif]-->
-
+	<!-- Pyscript CDN -->
+	<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+	<script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 
 <body>
+	<py-env>
+		- numpy
+		- scipy
+	</py-env>
+
 <div id="Cosmology_Calculator" class="section">
 
 <div class="section-center">
 <div class="container">
-	<span class="head"> Cosmology Calculator</span>
 <div class="row">
-<div class="col-lg-4">
+	<span class="head"> Cosmology Calculator</span>
+</div>
+<div class="row">
+<div class="col-sm-4 md-4">
 <div class="booking-form">
 <span class="form-head">Set Variables</span>
 <form>
@@ -61,20 +64,166 @@
 	<input id="OL" class="form-control" type="number" >
 	</div>
 <div class="form-btn">
-<button class="submit-btn">Submit</button>
+<button id="calculate_btn" class="submit-btn" type="submit" pys-onClick="calculate_btn">Submit</button>
+</div>
+<div class="form-btn">
+<button id="reset_btn" class="submit-btn" type="submit" pys-onClick="reset_btn">Reset Inputs</button>
 </div>
 </div>
 </form>
 </div>
 </div>
 
-<div class="col-lg-8">
+
+<py-script>
+
+import scipy.integrate as integrate
+import numpy as np
+
+#Constants
+c = 299792.458 # Speed of light in Km/s
+T0 = 2.725 # Present temperature of CMB in K
+
+
+class cosmology:
+	
+	def __init__ (self, params):
+		self.H0 , self.z, self.OM, self.OR, self.OL = params
+		self.OK = 1 -(self.OM+self.OR+self.OL)
+
+	def E_z(self,z):
+		return  (self.OM*(1+z)**(3) + self.OR*(1+z)**(2) + self.OK*(1+z)**(2) + self.OL) 
+
+	# The value of the Hubble parameter at that redshift, H(z) [given by Eq. 74]
+	def HParam(self): 
+		self.Hz = self.H0 * self.E_z(self.z)**(1/2)
+
+	#The present age of the universe, t_0 [given by Eq. 86], give this in Gyr or Myr
+	def t_0(self): 
+		integral = integrate.quad(lambda x: 1/((1+x)*self.E_z(x)**(1/2)), 0, np.inf)
+		t0_sec = (1/self.H0)*3.08*10**(19) * integral[0]
+		self.t0 = t0_sec/(31556952*10**(9))
+
+	# The age of the universe at that redshift, t(z) [given by Eq. 84], in Gyr or Myr
+	def t_z(self): 
+		integral = integrate.quad(lambda x: 1/((1+x) * self.E_z(x)**(1/2)), self.z, np.inf)
+		tz_sec = (1/self.H0)*3.08*10**(19) * integral[0]
+		self.tz = tz_sec/(31556952*10**(9))
+
+	# The look-back time up to that redshift, which is t_0 - t(z), in Gyr or Myr
+	def t_lb(self): 
+		self.tlb = self.t0 - self.tz
+
+	# Co-moving distance to that redshift, r_c given by equation 99, in Mpc 
+	def r_c(self): 
+		integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
+		self.rc = c * integral[0]
+
+	# angular diameter distance to that redshift, given by eq. 100 in Mpc
+	def d_a(self):
+		integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
+		self.da = (c/(1+self.z)) * integral[0]
+
+	# luminosity distance to that redshift, given by eq. 111, in Mpc
+	def d_l(self):
+		self.dl = (1+self.z)**(2) * self.da
+
+	# Temperature of the universe at that redshift, T(z) = T_0 (1 + z), where T_0 is the present temperature of the CMB which is 2.725 K
+	def T_z(self):
+		self.Tz = T0*(1+self.z)
+
+
+H0 = Element("H0")
+z = Element("z")
+OM = Element("OM")
+OR = Element("OR")
+OL = Element("OL")
+
+Hz = Element("Hz")
+t0 = Element("t0")
+tz = Element("tz")
+tlb = Element("tlb")
+rc = Element("rc")
+da = Element("da")
+dl = Element("dl")
+Tz = Element("Tz")
+
+
+params = []
+params.extend((H0.value, z.value, OM.value, OR.value, OL.value))
+
+def reset_btn(*args, **kwargs):
+	H0.clear()
+	z.clear()
+	OM.clear()
+	OR.clear()
+	OL.clear()
+
+def calculate_btn(*args, **kwargs):
+	obj = cosmology(params)
+	obj.HParam()
+	obj.t_0()
+	obj.t_z()
+	obj.t_lb()
+	obj.r_c()
+	obj.d_a()
+	obj.d_l()
+	obj.T_z()
+
+	Hz.write(f"{obj.Hz:.3f}")
+	t0.write(f"{obj.t0:.3f}")
+	tz.write(f"{obj.tz:.3f}")
+	tlb.write(f"{obj.tlb:.3f}")
+	rc.write(f"{obj.rc:.3f}")
+	da.write(f"{obj.da:.3f}")
+	dl.write(f"{obj.dl:.3f}")
+	Tz.write(f"{obj.Tz:.3f}")
+
+</py-script>
+
+
+
+<div class="col-sm-8 md-8">
 <div class="booking-form">
-		<p class="h2"> <span class="form-head">Results</span> </p>
+<span class="form-head">Results</span> 
+
+<div class="row">
+	<span class="Results">The Hubble Constant H at the redshift z:</label> <label id="z"></label></span>
+
+</div>
+
+<div class="row">
+	<span class="Results">The Present age of the universe:</label> <label id="t0"></label></span>
+</div>
+
+<div class="row">
+	<span class="Results">The universe age at z:</label> <label id="tz"></label></span>
+</div>
+
+<div class="row">
+	<span class="Results">The Look Back Time at z:</label> <label id="tlb"></label></span>
+</div>
+
+<div class="row">
+	<span class="Results">The Co-Moving distance at z:</label> <label id="rc"></label></span>
+</div>
+
+<div class="row">
+	<span class="Results">The Diameter distance to z:</label> <label id="da"></label></span>
+</div>
+
+<div class="row">
+	<span class="Results">The Luminosity distance to z:</label> <label id="dl"></label></span>
+</div>
+
+<div class="row">
+	<span class="Results">The Temperature of universe at z:</label> <label id="Tz"></label></span>
+</div>
+
 </div>
 </div>
 </div>
-</div>
+
 </div>
 </div>
 </div>

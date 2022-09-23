@@ -1,17 +1,28 @@
 .section {
 	position: relative;
 	height: 100vh;
+	padding: 15px 25px;
 }
 
 .section .head {
-	display: block;
-	margin-left: -5px;
+	display: relative;
 	margin-bottom: 35px;
 	font-weight: 400;
 	text-transform: uppercase;
-	line-height: 24px;
+	line-height: 65px;
 	height: 24px;
 	font-size: 50px;
+	color: #fff;
+}
+
+.section .footer {
+	display: block;
+	margin-bottom: 35px;
+	font-weight: 400;
+	text-transform: uppercase;
+	line-height: 65px;
+	height: 24px;
+	font-size: 10px;
 	color: #fff;
 }
 
@@ -117,7 +128,19 @@
 	text-transform: uppercase;
 	line-height: 24px;
 	height: 24px;
-	font-size: 20px;
+	font-size: 25px;
+	color: #fff;
+}
+
+.booking-form .Results {
+	display: block;
+	margin-left: 5px;
+	margin-bottom: 15px;
+	font-weight: 400;
+	text-transform: full-size-kana;
+	line-height: 24px;
+	height: 24px;
+	font-size: 23px;
 	color: #fff;
 }
 
@@ -182,7 +205,7 @@
 	color: #fff;
 	background-color: #f23e3e;
 	font-weight: 400;
-	height: 50px;
+	height: 0px;
 	font-size: 14px;
 	border: none;
 	width: 100%;

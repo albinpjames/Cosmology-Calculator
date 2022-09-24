@@ -2,40 +2,44 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-	<title>Cosmology Calculator</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<!-- Google font -->
-	<link href="https://fonts.googleapis.com/css?family=PT+Sans:400" rel="stylesheet">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>Cosmology Calculator</title>
 
-	<!-- Bootstrap -->
-	<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Google font -->
+<link href="https://fonts.googleapis.com/css?family=PT+Sans:400" rel="stylesheet">
 
-	<!-- Custom stlylesheet -->
-	<link type="text/css" rel="stylesheet" href="css/style.css" />
+<!-- Bootstrap -->
+<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<!-- Pyscript CDN -->
-	<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-	<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<!-- Custom stlylesheet -->
+<link type="text/css" rel="stylesheet" href="css/style.css" />
+
+
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<py-env>
+    - numpy
+    - scipy
+</py-env>
+
 </head>
 
+
 <body>
-	<py-env>
-		- numpy
-		- scipy
-	</py-env>
+
 
 <div id="Cosmology_Calculator" class="section">
 
 <div class="section-center">
 <div class="container">
 <div class="row">
-	<span class="head"> Cosmology Calculator</span>
+    <span class="head"> Cosmology Calculator</span>
 </div>
 <div class="row">
 <div class="col-sm-4 md-4">
@@ -44,30 +48,30 @@
 <form>
 <div class="row">
 <div class="form-group">
-	<span class="form-label">Hubble Constant</span>
-	<input id="H0" class="form-control" type="number" >
-	</div>
+    <span class="form-label">Hubble Constant</span>
+    <input id="H0" class="form-control"  placeholder="0.00" aria-label="H0" aria-describedby="H0" required type="number" step="any">
+    </div>
 <div class="form-group">
-	<span class="form-label">Redshift</span>
-	<input id="z" class="form-control" type="number" >
-	</div>
+    <span class="form-label">Redshift</span>
+    <input id="z" class="form-control"  placeholder="0.00" aria-label="z" aria-describedby="z" required type="number" step="any">
+    </div>
 <div class="form-group">
-	<span class="form-label">Omega M</span>
-	<input id="OM" class="form-control" type="number" >
-	</div>
+    <span class="form-label">Omega M</span>
+    <input id="OM" class="form-control"  placeholder="0.00" aria-label="OM" aria-describedby="OM" required type="number" step="any">
+    </div>
 <div class="form-group">
-	<span class="form-label">Omega Radiation</span>
-	<input id="OR" class="form-control" type="number" >
-	</div>
+    <span class="form-label">Omega Radiation</span>
+    <input id="OR" class="form-control"  placeholder="0.00" aria-label="OR" aria-describedby="OR" required type="number" step="any">
+    </div>
 <div class="form-group">
-	<span class="form-label">Omega Lambda</span>
-	<input id="OL" class="form-control" type="number" >
-	</div>
+    <span class="form-label">Omega Lambda</span>
+    <input id="OL" class="form-control"  placeholder="0.00" aria-label="OL" aria-describedby="OL" required type="number" step="any">
+    </div>
 <div class="form-btn">
-<button id="calculate_btn" class="submit-btn" type="submit" pys-onClick="calculate_btn">Submit</button>
+    <button class="submit-btn" id="calculate_btn" type="submit" pys-onClick="calculate_btn">Submit</button>
 </div>
 <div class="form-btn">
-<button id="reset_btn" class="submit-btn" type="submit" pys-onClick="reset_btn">Reset Inputs</button>
+    <button id="reset-btn"  class="submit-btn" type="submit" pys-onClick="reset_btn">Reset Inputs</button>
 </div>
 </div>
 </form>
@@ -77,13 +81,24 @@
 
 <py-script>
 
-import scipy.integrate as integrate
+import scipy.integrate as integrate 
 import numpy as np
+
+print("test")
 
 #Constants
 c = 299792.458 # Speed of light in Km/s
 T0 = 2.725 # Present temperature of CMB in K
 
+H0 = Element("H0")
+z = Element("z")
+OM = Element("OM")
+OR = Element("OR")
+OL = Element("OL")
+
+
+params = []
+params.extend((H0.value, z.value, OM.value, OR.value, OL.value))
 
 class cosmology:
 	
@@ -133,24 +148,6 @@ class cosmology:
 		self.Tz = T0*(1+self.z)
 
 
-H0 = Element("H0")
-z = Element("z")
-OM = Element("OM")
-OR = Element("OR")
-OL = Element("OL")
-
-Hz = Element("Hz")
-t0 = Element("t0")
-tz = Element("tz")
-tlb = Element("tlb")
-rc = Element("rc")
-da = Element("da")
-dl = Element("dl")
-Tz = Element("Tz")
-
-
-params = []
-params.extend((H0.value, z.value, OM.value, OR.value, OL.value))
 
 def reset_btn(*args, **kwargs):
 	H0.clear()
@@ -160,6 +157,7 @@ def reset_btn(*args, **kwargs):
 	OL.clear()
 
 def calculate_btn(*args, **kwargs):
+	print("button clicked")
 	obj = cosmology(params)
 	obj.HParam()
 	obj.t_0()
@@ -170,64 +168,67 @@ def calculate_btn(*args, **kwargs):
 	obj.d_l()
 	obj.T_z()
 
-	Hz.write(f"{obj.Hz:.3f}")
-	t0.write(f"{obj.t0:.3f}")
-	tz.write(f"{obj.tz:.3f}")
-	tlb.write(f"{obj.tlb:.3f}")
-	rc.write(f"{obj.rc:.3f}")
-	da.write(f"{obj.da:.3f}")
-	dl.write(f"{obj.dl:.3f}")
-	Tz.write(f"{obj.Tz:.3f}")
+	Element("Hz").write(obj.Hz)
+	Element("t0").write(obj.t0)
+	Element("tz").write(obj.tz)
+	Element("tlb").write(obj.tlb)
+	Element("rc").write(obj.rc)
+	Element("da").write(obj.da)
+	Element("dl").write(obj.dl)
+	Element("Tz").write(obj.Tz)
 
 </py-script>
 
 
 
 <div class="col-sm-8 md-8">
-<div class="booking-form">
-<span class="form-head">Results</span> 
+    <div class="booking-form">
+    <span class="form-head">Results</span> 
+    
+    <div class="row">
+        <span class="Results">The Hubble Constant H at the redshift z:<p id="Hz"></p></span>
+    
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Present age of the universe:<p id="t0"></p></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The universe age at z:<p id="tz"></p></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Look Back Time at z:<p id="tlb"></p></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Co-Moving distance at z:<p id="rc"></p></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Diameter distance to z:<p id="da"></p></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Luminosity distance to z:<p id="dl"></p></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Temperature of universe at z:<p id="Tz"></p></span>
+    </div>
+    
+    </div>
+    </div>
 
-<div class="row">
-	<span class="Results">The Hubble Constant H at the redshift z:</label> <label id="z"></label></span>
-
-</div>
-
-<div class="row">
-	<span class="Results">The Present age of the universe:</label> <label id="t0"></label></span>
-</div>
-
-<div class="row">
-	<span class="Results">The universe age at z:</label> <label id="tz"></label></span>
-</div>
-
-<div class="row">
-	<span class="Results">The Look Back Time at z:</label> <label id="tlb"></label></span>
-</div>
-
-<div class="row">
-	<span class="Results">The Co-Moving distance at z:</label> <label id="rc"></label></span>
-</div>
-
-<div class="row">
-	<span class="Results">The Diameter distance to z:</label> <label id="da"></label></span>
-</div>
-
-<div class="row">
-	<span class="Results">The Luminosity distance to z:</label> <label id="dl"></label></span>
-</div>
-
-<div class="row">
-	<span class="Results">The Temperature of universe at z:</label> <label id="Tz"></label></span>
-</div>
 
 </div>
 </div>
 </div>
 
-</div>
-</div>
 </div>
 
 </body>
+
 
 </html>

@@ -42,10 +42,10 @@
     <span class="head"> Cosmology Calculator</span>
 </div>
 <div class="row">
-<div class="col-sm-4 md-4">
+<div class="col-sm-4" >
 <div class="booking-form">
 <span class="form-head">Set Variables</span>
-<form>
+<form onsubmit="return false">
 <div class="row">
 <div class="form-group">
     <span class="form-label">Hubble Constant</span>
@@ -70,9 +70,9 @@
 <div class="form-btn">
     <button class="submit-btn" id="calculate_btn" type="submit" pys-onClick="calculate_btn">Submit</button>
 </div>
-<div class="form-btn">
+<!-- <div class="form-btn">
     <button id="reset-btn"  class="submit-btn" type="submit" pys-onClick="reset_btn">Reset Inputs</button>
-</div>
+</div> -->
 </div>
 </form>
 </div>
@@ -80,11 +80,8 @@
 
 
 <py-script>
-
 import scipy.integrate as integrate 
 import numpy as np
-
-print("test")
 
 #Constants
 c = 299792.458 # Speed of light in Km/s
@@ -97,129 +94,156 @@ OR = Element("OR")
 OL = Element("OL")
 
 
-params = []
-params.extend((H0.value, z.value, OM.value, OR.value, OL.value))
-
 class cosmology:
-	
-	def __init__ (self, params):
-		self.H0 , self.z, self.OM, self.OR, self.OL = params
-		self.OK = 1 -(self.OM+self.OR+self.OL)
+    
+    def __init__ (self, H0, z, OM, OR, OL):
+        self.H0 , self.z, self.OM, self.OR, self.OL = float(H0), float(z), float(OM), float(OR), float(OL)
+        self.OK = 1 -(self.OM + self.OR + self.OL)
 
-	def E_z(self,z):
-		return  (self.OM*(1+z)**(3) + self.OR*(1+z)**(2) + self.OK*(1+z)**(2) + self.OL) 
+    def E_z(self,z):
+        return  (self.OM*(1+z)**(3) + self.OR*(1+z)**(2) + self.OK*(1+z)**(2) + self.OL) 
 
-	# The value of the Hubble parameter at that redshift, H(z) [given by Eq. 74]
-	def HParam(self): 
-		self.Hz = self.H0 * self.E_z(self.z)**(1/2)
+    # The value of the Hubble parameter at that redshift, H(z) [given by Eq. 74]
+    def HParam(self): 
+        self.Hz = self.H0 * self.E_z(self.z)**(1/2)
 
-	#The present age of the universe, t_0 [given by Eq. 86], give this in Gyr or Myr
-	def t_0(self): 
-		integral = integrate.quad(lambda x: 1/((1+x)*self.E_z(x)**(1/2)), 0, np.inf)
-		t0_sec = (1/self.H0)*3.08*10**(19) * integral[0]
-		self.t0 = t0_sec/(31556952*10**(9))
+    #The present age of the universe, t_0 [given by Eq. 86], give this in Gyr or Myr
+    def t_0(self): 
+        integral = integrate.quad(lambda x: 1/((1+x)*self.E_z(x)**(1/2)), 0, np.inf)
+        t0_sec = (1/self.H0)*3.08*10**(19) * integral[0]
+        self.t0 = t0_sec/(31556952*10**(9))
 
-	# The age of the universe at that redshift, t(z) [given by Eq. 84], in Gyr or Myr
-	def t_z(self): 
-		integral = integrate.quad(lambda x: 1/((1+x) * self.E_z(x)**(1/2)), self.z, np.inf)
-		tz_sec = (1/self.H0)*3.08*10**(19) * integral[0]
-		self.tz = tz_sec/(31556952*10**(9))
+    # The age of the universe at that redshift, t(z) [given by Eq. 84], in Gyr or Myr
+    def t_z(self): 
+        integral = integrate.quad(lambda x: 1/((1+x) * self.E_z(x)**(1/2)), self.z, np.inf)
+        tz_sec = (1/self.H0)*3.08*10**(19) * integral[0]
+        self.tz = tz_sec/(31556952*10**(9))
 
-	# The look-back time up to that redshift, which is t_0 - t(z), in Gyr or Myr
-	def t_lb(self): 
-		self.tlb = self.t0 - self.tz
+    # The look-back time up to that redshift, which is t_0 - t(z), in Gyr or Myr
+    def t_lb(self): 
+        self.tlb = self.t0 - self.tz
 
-	# Co-moving distance to that redshift, r_c given by equation 99, in Mpc 
-	def r_c(self): 
-		integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
-		self.rc = c * integral[0]
+    # Co-moving distance to that redshift, r_c given by equation 99, in Mpc 
+    def r_c(self): 
+        integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
+        self.rc = c * integral[0]
 
-	# angular diameter distance to that redshift, given by eq. 100 in Mpc
-	def d_a(self):
-		integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
-		self.da = (c/(1+self.z)) * integral[0]
+    # angular diameter distance to that redshift, given by eq. 100 in Mpc
+    def d_a(self):
+        integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
+        self.da = (c/(1+self.z)) * integral[0]
 
-	# luminosity distance to that redshift, given by eq. 111, in Mpc
-	def d_l(self):
-		self.dl = (1+self.z)**(2) * self.da
+    # luminosity distance to that redshift, given by eq. 111, in Mpc
+    def d_l(self):
+        self.dl = (1+self.z)**(2) * self.da
 
-	# Temperature of the universe at that redshift, T(z) = T_0 (1 + z), where T_0 is the present temperature of the CMB which is 2.725 K
-	def T_z(self):
-		self.Tz = T0*(1+self.z)
+    # Temperature of the universe at that redshift, T(z) = T_0 (1 + z), where T_0 is the present temperature of the CMB which is 2.725 K
+    def T_z(self):
+        self.Tz = T0*(1+self.z)
 
-
-
-def reset_btn(*args, **kwargs):
-	H0.clear()
-	z.clear()
-	OM.clear()
-	OR.clear()
-	OL.clear()
 
 def calculate_btn(*args, **kwargs):
-	obj = cosmology(params)
-	obj.HParam()
-	obj.t_0()
-	obj.t_z()
-	obj.t_lb()
-	obj.r_c()
-	obj.d_a()
-	obj.d_l()
-	obj.T_z()
+    obj = cosmology(H0.value, z.value, OM.value, OR.value, OL.value)
+    obj.HParam()
+    obj.t_0()
+    obj.t_z()
+    obj.t_lb()
+    obj.r_c()
+    obj.d_a()
+    obj.d_l()
+    obj.T_z()
 
-	Element("Hz").write(obj.Hz)
-	Element("t0").write(obj.t0)
-	Element("tz").write(obj.tz)
-	Element("tlb").write(obj.tlb)
-	Element("rc").write(obj.rc)
-	Element("da").write(obj.da)
-	Element("dl").write(obj.dl)
-	Element("Tz").write(obj.Tz)
+    Element("Hz").write(obj.Hz)
+    Element("t0").write(obj.t0)
+    Element("tz").write(obj.tz)
+    Element("tlb").write(obj.tlb)
+    Element("rc").write(obj.rc)
+    Element("da").write(obj.da)
+    Element("dl").write(obj.dl)
+    Element("Tz").write(obj.Tz)
 
 </py-script>
 
 
 
-<div class="col-sm-8 md-8">
+<div class="col-sm-5">
     <div class="booking-form">
     <span class="form-head">Results</span> 
     
     <div class="row">
-        <span class="Results">The Hubble Constant H at the redshift z:<p id="Hz"></p></span>
+        <span class="Results">The Hubble Constant H at the redshift z:</span>
     
     </div>
     
     <div class="row">
-        <span class="Results">The Present age of the universe:<p id="t0"></p></span>
+        <span class="Results">The Present age of the universe:</span>
     </div>
     
     <div class="row">
-        <span class="Results">The universe age at z:<p id="tz"></p></span>
+        <span class="Results">The universe age at z:</span>
     </div>
     
     <div class="row">
-        <span class="Results">The Look Back Time at z:<p id="tlb"></p></span>
+        <span class="Results">The Look Back Time at z:</span>
     </div>
     
     <div class="row">
-        <span class="Results">The Co-Moving distance at z:<p id="rc"></p></span>
+        <span class="Results">The Co-Moving distance at z:</span>
     </div>
     
     <div class="row">
-        <span class="Results">The Diameter distance to z:<p id="da"></p></span>
+        <span class="Results">The Diameter distance to z:</span>
     </div>
     
     <div class="row">
-        <span class="Results">The Luminosity distance to z:<p id="dl"></p></span>
+        <span class="Results">The Luminosity distance to z:</span>
     </div>
     
     <div class="row">
-        <span class="Results">The Temperature of universe at z:<p id="Tz"></p></span>
+        <span class="Results">The Temperature of universe at z:</span>
     </div>
-    
     </div>
     </div>
 
+<div class="col-sm-3">
+    <div class="booking-form">
+    <span class="form-head">Results</span> 
+    
+    <div class="row">
+        <span class="Results" id="Hz"></span>
+    
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="t0"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="tz"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="tlb"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="rc"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="da"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results"  id="dl"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results"  id="Tz"></span>
+    </div>
+    </div>
+    </div>
+    
 
 </div>
 </div>

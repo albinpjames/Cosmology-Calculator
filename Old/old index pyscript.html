@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>Cosmology Calculator</title>
+
+<!-- Google font -->
+<link href="https://fonts.googleapis.com/css?family=PT+Sans:400" rel="stylesheet">
+
+<!-- Bootstrap -->
+<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Custom stlylesheet -->
+<link type="text/css" rel="stylesheet" href="css/style.css" />
+
+
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<py-env>
+    - numpy
+    - scipy
+</py-env>
+
+</head>
+
+
+<body>
+
+
+<div id="Cosmology_Calculator" class="section">
+
+<div class="section-center">
+<div class="container">
+<div class="row">
+    <span class="head"> Cosmology Calculator</span>
+</div>
+<div class="row">
+<div class="col-sm-4" >
+<div class="booking-form">
+<span class="form-head">Set Variables</span>
+<form onsubmit="return false">
+<div class="row">
+<div class="form-group">
+    <span class="form-label">Hubble Constant</span>
+    <input id="H0" class="form-control"  placeholder="0.00" aria-label="H0" aria-describedby="H0" required type="number" step="any">
+    </div>
+<div class="form-group">
+    <span class="form-label">Redshift</span>
+    <input id="z" class="form-control"  placeholder="0.00" aria-label="z" aria-describedby="z" required type="number" step="any">
+    </div>
+<div class="form-group">
+    <span class="form-label">Omega M</span>
+    <input id="OM" class="form-control"  placeholder="0.00" aria-label="OM" aria-describedby="OM" required type="number" step="any">
+    </div>
+<div class="form-group">
+    <span class="form-label">Omega Radiation</span>
+    <input id="OR" class="form-control"  placeholder="0.00" aria-label="OR" aria-describedby="OR" required type="number" step="any">
+    </div>
+<div class="form-group">
+    <span class="form-label">Omega Lambda</span>
+    <input id="OL" class="form-control"  placeholder="0.00" aria-label="OL" aria-describedby="OL" required type="number" step="any">
+    </div>
+<div class="form-btn">
+    <button class="submit-btn" id="calculate_btn" type="submit" pys-onClick="calculate_btn">Submit</button>
+</div>
+<!-- <div class="form-btn">
+    <button id="reset-btn"  class="submit-btn" type="submit" pys-onClick="reset_btn">Reset Inputs</button>
+</div> -->
+</div>
+</form>
+</div>
+</div>
+
+
+<py-script>
+import scipy.integrate as integrate 
+import numpy as np
+
+#Constants
+c = 299792.458 # Speed of light in Km/s
+T0 = 2.725 # Present temperature of CMB in K
+
+H0 = Element("H0")
+z = Element("z")
+OM = Element("OM")
+OR = Element("OR")
+OL = Element("OL")
+
+
+class cosmology:
+    
+    def __init__ (self, H0, z, OM, OR, OL):
+        self.H0 , self.z, self.OM, self.OR, self.OL = float(H0), float(z), float(OM), float(OR), float(OL)
+        self.OK = 1 -(self.OM + self.OR + self.OL)
+
+    def E_z(self,z):
+        return  (self.OM*(1+z)**(3) + self.OR*(1+z)**(2) + self.OK*(1+z)**(2) + self.OL) 
+
+    # The value of the Hubble parameter at that redshift, H(z) [given by Eq. 74]
+    def HParam(self): 
+        self.Hz = self.H0 * self.E_z(self.z)**(1/2)
+
+    #The present age of the universe, t_0 [given by Eq. 86], give this in Gyr or Myr
+    def t_0(self): 
+        integral = integrate.quad(lambda x: 1/((1+x)*self.E_z(x)**(1/2)), 0, np.inf)
+        t0_sec = (1/self.H0)*3.08*10**(19) * integral[0]
+        self.t0 = t0_sec/(31556952*10**(9))
+
+    # The age of the universe at that redshift, t(z) [given by Eq. 84], in Gyr or Myr
+    def t_z(self): 
+        integral = integrate.quad(lambda x: 1/((1+x) * self.E_z(x)**(1/2)), self.z, np.inf)
+        tz_sec = (1/self.H0)*3.08*10**(19) * integral[0]
+        self.tz = tz_sec/(31556952*10**(9))
+
+    # The look-back time up to that redshift, which is t_0 - t(z), in Gyr or Myr
+    def t_lb(self): 
+        self.tlb = self.t0 - self.tz
+
+    # Co-moving distance to that redshift, r_c given by equation 99, in Mpc 
+    def r_c(self): 
+        integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
+        self.rc = c * integral[0]
+
+    # angular diameter distance to that redshift, given by eq. 100 in Mpc
+    def d_a(self):
+        integral = integrate.quad(lambda x: 1/(self.H0 * self.E_z(x)**(1/2)), 0, self.z)
+        self.da = (c/(1+self.z)) * integral[0]
+
+    # luminosity distance to that redshift, given by eq. 111, in Mpc
+    def d_l(self):
+        self.dl = (1+self.z)**(2) * self.da
+
+    # Temperature of the universe at that redshift, T(z) = T_0 (1 + z), where T_0 is the present temperature of the CMB which is 2.725 K
+    def T_z(self):
+        self.Tz = T0*(1+self.z)
+
+
+def calculate_btn(*args, **kwargs):
+    obj = cosmology(H0.value, z.value, OM.value, OR.value, OL.value)
+    obj.HParam()
+    obj.t_0()
+    obj.t_z()
+    obj.t_lb()
+    obj.r_c()
+    obj.d_a()
+    obj.d_l()
+    obj.T_z()
+
+    Element("Hz").write(obj.Hz)
+    Element("t0").write(obj.t0)
+    Element("tz").write(obj.tz)
+    Element("tlb").write(obj.tlb)
+    Element("rc").write(obj.rc)
+    Element("da").write(obj.da)
+    Element("dl").write(obj.dl)
+    Element("Tz").write(obj.Tz)
+
+</py-script>
+
+
+
+<div class="col-sm-5">
+    <div class="booking-form">
+    <span class="form-head">Results</span> 
+    
+    <div class="row">
+        <span class="Results">The Hubble Constant H at the redshift z:</span>
+    
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Present age of the universe:</span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The universe age at z:</span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Look Back Time at z:</span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Co-Moving distance at z:</span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Diameter distance to z:</span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Luminosity distance to z:</span>
+    </div>
+    
+    <div class="row">
+        <span class="Results">The Temperature of universe at z:</span>
+    </div>
+    </div>
+    </div>
+
+<div class="col-sm-3">
+    <div class="booking-form">
+    <span class="form-head"></span> 
+    
+    <div class="row">
+        <span class="Results" id="Hz"></span>
+    
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="t0"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="tz"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="tlb"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="rc"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results" id="da"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results"  id="dl"></span>
+    </div>
+    
+    <div class="row">
+        <span class="Results"  id="Tz"></span>
+    </div>
+    </div>
+    </div>
+    
+
+</div>
+</div>
+</div>
+
+</div>
+
+</body>
+
+
+</html>
